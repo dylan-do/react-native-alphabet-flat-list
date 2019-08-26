@@ -5,35 +5,37 @@
  * Time: 下午3:03
  * Desc: 字母列表
  */
-import React from 'react';
-import PropTypes from 'prop-types';
-import { PanResponder, View } from 'react-native';
-import Toast from 'react-native-root-toast';
-import { SectionListItem } from './SectionListItem';
+import React from 'react'
+import PropTypes from 'prop-types'
+import { PanResponder, View } from 'react-native'
+import Toast from 'react-native-root-toast'
+import { SectionListItem } from './SectionListItem'
 
-let toast = null;
+let toast = null
 
 export function AlphabetListView({
   contentHeight,
   pageY,
   titles,
   onSelect,
-  selectAlphabet
+  selectAlphabet,
+  alphabetListStyle,
+  sectionListItemStyle
 }) {
-  const itemHeight = contentHeight / titles.length;
+  const itemHeight = contentHeight / titles.length
 
   const onTouchChange = (evt, type) => {
-    const event = evt.nativeEvent || {};
-    const index = Math.floor((event.pageY - pageY) / itemHeight);
+    const event = evt.nativeEvent || {}
+    const index = Math.floor((event.pageY - pageY) / itemHeight)
 
     // console.log('AlphabetListView.onTouchChange()', event.pageY, index, type);
 
     if (index >= 0) {
       if (toast) {
         setTimeout(() => {
-          toast && Toast.hide(toast);
-          toast = null;
-        }, 100);
+          toast && Toast.hide(toast)
+          toast = null
+        }, 100)
       }
       if (type === 'Move') {
         toast = Toast.show(`${titles[index]}`, {
@@ -53,11 +55,11 @@ export function AlphabetListView({
             fontSize: 35,
             fontWeight: 'bold'
           }
-        });
+        })
       }
-      onSelect && onSelect(index);
+      onSelect && onSelect(index)
     }
-  };
+  }
 
   const responder = PanResponder.create({
     // 要求成为响应者：
@@ -71,17 +73,24 @@ export function AlphabetListView({
     onPanResponderMove: evt => onTouchChange(evt, 'Move')
     // onPanResponderEnd: evt => onTouchChange(evt, 'End'),
     // onPanResponderRelease: evt => onTouchChange(evt, 'Release')
-  });
+  })
 
   return (
     <View
-      style={{
-        position: 'absolute',
-        top: 0,
-        right: 10,
-        zIndex: 10,
-        height: contentHeight
-      }}
+      style={[
+        {
+          position: 'absolute',
+          top: 0,
+          right: 10,
+          zIndex: 10,
+          height: contentHeight,
+          backgroundColor: '#D8D8D8',
+          borderRadius: 30
+          // paddingVertical: 15
+          // overflow: 'hidden',
+        },
+        alphabetListStyle
+      ]}
       {...responder.panHandlers}
     >
       {titles.map(title => (
@@ -90,15 +99,16 @@ export function AlphabetListView({
           height={itemHeight}
           title={title}
           active={selectAlphabet === title}
+          style={sectionListItemStyle}
           onPanResponder={() => {
-            toast(title);
+            toast(title)
           }}
         />
       ))}
     </View>
-  );
+  )
 }
 
 AlphabetListView.propTypes = {
   prop: PropTypes.any
-};
+}

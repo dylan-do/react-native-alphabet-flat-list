@@ -5,15 +5,13 @@
  * Time: 下午2:15
  * Desc: 自定义带字母的滚动列表
  */
-import React, { Component } from 'react';
-import {
-  View, FlatList, InteractionManager, Dimensions
-} from 'react-native';
-import PropTypes from 'prop-types';
-import { SectionHeader } from './SectionHeader';
-import { AlphabetListView } from './AlphabetListView';
+import React, { Component } from 'react'
+import { View, FlatList, InteractionManager, Dimensions } from 'react-native'
+import PropTypes from 'prop-types'
+import { SectionHeader } from './SectionHeader'
+import { AlphabetListView } from './AlphabetListView'
 
-const screenHeight = Dimensions.get('window').height;
+const screenHeight = Dimensions.get('window').height
 
 export class SWAlphabetFlatList extends Component {
   static propTypes = {
@@ -40,21 +38,23 @@ export class SWAlphabetFlatList extends Component {
     sectionHeaderComponent: PropTypes.oneOfType([
       PropTypes.element,
       PropTypes.func
-    ])
-  };
+    ]),
+    alphabetListStyle: PropTypes.object,
+    sectionListItemStyle: PropTypes.object
+  }
 
   static defaultProps = {
     sectionHeaderHeight: SectionHeader.height,
     sectionHeaderComponent: SectionHeader
-  };
+  }
 
   constructor(props) {
-    super(props);
+    super(props)
     /**
      * 用于解决点击字母后又触发 onViewableItemsChanged 导致选中的字母与点击的字母不一致问题
      * @type {boolean}
      */
-    this.touchedTime = 0;
+    this.touchedTime = 0
     this.state = {
       containerHeight: screenHeight,
       itemLayout: [],
@@ -62,16 +62,16 @@ export class SWAlphabetFlatList extends Component {
       selectAlphabet: null,
       initialNumToRender: 0,
       pageY: 0 // 相对于屏幕的Y坐标
-    };
+    }
   }
 
   componentDidMount() {
-    this.refreshBaseData(this.props.data);
+    this.refreshBaseData(this.props.data)
   }
 
   componentWillReceiveProps({ data }) {
     if (data !== this.props.data) {
-      this.refreshBaseData(data);
+      this.refreshBaseData(data)
     }
   }
 
@@ -79,17 +79,18 @@ export class SWAlphabetFlatList extends Component {
    * 计算所需要的数据
    * @param data
    */
-  refreshBaseData = (data) => {
-    const titles = Object.keys(data);
+  refreshBaseData = data => {
+    const titles = Object.keys(data)
 
-    const offset = (index, itemLength) => index * this.props.sectionHeaderHeight
-      + itemLength * this.props.itemHeight;
+    const offset = (index, itemLength) =>
+      index * this.props.sectionHeaderHeight +
+      itemLength * this.props.itemHeight
 
     const itemLayout = titles.map((title, index) => {
       const beforeItemLength = titles
         .slice(0, index)
-        .reduce((length, item) => length + data[item].length, 0);
-      const itemLength = data[title].length;
+        .reduce((length, item) => length + data[item].length, 0)
+      const itemLength = data[title].length
       return {
         title,
         itemLength,
@@ -97,15 +98,15 @@ export class SWAlphabetFlatList extends Component {
         length:
           this.props.sectionHeaderHeight + this.props.itemHeight * itemLength,
         offset: offset(index, beforeItemLength)
-      };
-    });
+      }
+    })
 
     // 计算首屏渲染的数量 避免出现空白区域
     let initialNumToRender = itemLayout.findIndex(
       item => item.offset >= this.state.containerHeight
-    );
+    )
     if (initialNumToRender < 0) {
-      initialNumToRender = titles.length;
+      initialNumToRender = titles.length
     }
 
     this.setState({
@@ -113,8 +114,8 @@ export class SWAlphabetFlatList extends Component {
       titles,
       selectAlphabet: titles[0],
       initialNumToRender
-    });
-  };
+    })
+  }
 
   /**
    * 获取列表区域高度，用于计算字母列表的显示
@@ -125,26 +126,26 @@ export class SWAlphabetFlatList extends Component {
       this.container.measure((x, y, w, h, px, py) => {
         this.setState({
           pageY: py
-        });
-      });
-    });
+        })
+      })
+    })
     this.setState({
       containerHeight: layout && layout.height
-    });
-  };
+    })
+  }
 
   /**
    * 点击字母触发滚动
    */
-  onSelect = (index) => {
-    this.list.scrollToIndex({ index });
-    this.touchedTime = new Date().getTime();
+  onSelect = index => {
+    this.list.scrollToIndex({ index })
+    this.touchedTime = new Date().getTime()
     InteractionManager.runAfterInteractions(() => {
       this.setState({
         selectAlphabet: this.state.titles[index]
-      });
-    });
-  };
+      })
+    })
+  }
 
   /**
    * 可视范围内元素变化时改变所选字母
@@ -154,36 +155,38 @@ export class SWAlphabetFlatList extends Component {
     if (viewableItems && viewableItems.length) {
       // 点击字母触发的滚动3秒内不响应
       if (new Date().getTime() - this.touchedTime < 3000) {
-        return;
+        return
       }
       InteractionManager.runAfterInteractions(() => {
         this.setState({
           selectAlphabet: viewableItems[0].item
-        });
-      });
+        })
+      })
     }
-  };
+  }
 
   getItemLayout = (data, index) => ({
     length: this.state.itemLayout[index].length,
     offset: this.state.itemLayout[index].offset,
     index
-  });
+  })
 
   renderItem = ({ item }) => {
-    const MSectionHeader = this.props.sectionHeaderComponent;
+    const MSectionHeader = this.props.sectionHeaderComponent
 
     return (
       <View>
         <MSectionHeader title={item} />
-        {this.props.data[item].map((itemValue, itemIndex, items) => this.props.renderItem({
-          item: itemValue,
-          index: itemIndex,
-          last: itemIndex === items.length - 1
-        }))}
+        {this.props.data[item].map((itemValue, itemIndex, items) =>
+          this.props.renderItem({
+            item: itemValue,
+            index: itemIndex,
+            last: itemIndex === items.length - 1
+          })
+        )}
       </View>
-    );
-  };
+    )
+  }
 
   render() {
     return (
@@ -191,19 +194,19 @@ export class SWAlphabetFlatList extends Component {
         style={{
           flex: 1
         }}
-        ref={(ref) => {
-          this.container = ref;
+        ref={ref => {
+          this.container = ref
         }}
         onLayout={this.onLayout}
       >
         <FlatList
-          ref={(ref) => {
-            this.list = ref;
+          ref={ref => {
+            this.list = ref
           }}
           {...this.props}
           data={this.state.titles}
           renderItem={this.renderItem}
-          keyExtractor={(item, index) => `${index}`}
+          keyExtractor={(item, index) => index}
           getItemLayout={this.getItemLayout}
           initialNumToRender={this.state.initialNumToRender}
           onViewableItemsChanged={this.onViewableItemsChanged}
@@ -214,8 +217,10 @@ export class SWAlphabetFlatList extends Component {
           titles={this.state.titles}
           selectAlphabet={this.state.selectAlphabet}
           onSelect={this.onSelect}
+          alphabetListStyle={this.props.alphabetListStyle}
+          sectionListItemStyle={this.props.sectionListItemStyle}
         />
       </View>
-    );
+    )
   }
 }
